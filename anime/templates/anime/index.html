@@ -3,22 +3,38 @@
 
 {% block title %}AniVerse — смотри аниме{% endblock %}
 
+{% block extra_css %}
+<style>
+  .hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.45) saturate(1.1);
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="content">
   {% include 'includes/nav.html' %}
 
-  <!-- HERO -->
+  <!-- HERO WITH VIDEO -->
   <section class="hero">
-    <div class="hero-image"></div>
     <div class="hero-bg"></div>
+    <video class="hero-video" autoplay muted loop playsinline id="heroVideo">
+      <source src="{% static 'video/hero.mp4' %}" type="video/mp4">
+      Ваш браузер не поддерживает видео.
+    </video>
     <div class="hero-content">
       <div class="hero-badge">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         Топ сезона
       </div>
-      <h1 class="hero-title">Магическая<br>Битва 2</h1>
+      <h1 class="hero-title">Убийца<br>Семь</h1>
       <div class="hero-meta">
-        <span class="rating">9.15</span>
+        <span class="rating">8.92</span>
         <span>•</span>
         <span>2024</span>
         <span>•</span>
@@ -26,14 +42,17 @@
         <span>•</span>
         <span>16+</span>
       </div>
-      <p class="hero-description">Итадори Юдзи продолжает путь проклятого мага. Инцидент в Сибуе изменил всё — теперь мир стоит на краю войны между живыми и мёртвыми.</p>
+      <p class="hero-description">Убийца по прозвищу Семь теряет память и становится парикмахером. Но прошлое настигает его — он был элитным ассасином организации «Теневая организация». Теперь ему предстоит выбрать между мирной жизнью и возвращением к кровавому ремеслу.</p>
       <div style="display:flex; gap:12px; align-items:center;">
         <button class="btn-primary" onclick="window.location.href='/player/1/'">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Доступно в 4K
+          Смотреть
         </button>
         <button class="btn-secondary" onclick="openModal(featuredAnime)">Подробнее</button>
       </div>
+    </div>
+    <div class="hero-mute" id="heroMuteBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
     </div>
   </section>
 
@@ -87,11 +106,11 @@
 <script>
   const featuredAnime = {
     id: 1,
-    title: 'Магическая Битва 2',
-    rating: '9.15',
+    title: 'Убийца Семь',
+    rating: '8.92',
     year: '2024',
-    genres: ['Экшен', 'Фэнтези', 'Сёнен'],
-    desc: 'Итадори Юдзи продолжает путь проклятого мага. Инцидент в Сибуе изменил всё — теперь мир стоит на краю войны между живыми и мёртвыми.',
+    genres: ['Экшен', 'Комедия', 'Сёнен'],
+    desc: 'Убийца по прозвищу Семь теряет память и становится парикмахером. Но прошлое настигает его — он был элитным ассасином организации «Теневая организация». Теперь ему предстоит выбрать между мирной жизнью и возвращением к кровавому ремеслу.',
     img: 'https://i.imgur.com/tCF58S3.jpg'
   };
 
@@ -99,6 +118,18 @@
 
   function getAnimeById(id) {
     return animeList.find(a => a.id === id);
+  }
+
+  // Hero video mute toggle
+  const heroMuteBtn = document.getElementById('heroMuteBtn');
+  const heroVideo = document.getElementById('heroVideo');
+  if (heroMuteBtn && heroVideo) {
+    heroMuteBtn.addEventListener('click', function() {
+      heroVideo.muted = !heroVideo.muted;
+      this.innerHTML = heroVideo.muted 
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/></svg>';
+    });
   }
 </script>
 {% endblock %}
