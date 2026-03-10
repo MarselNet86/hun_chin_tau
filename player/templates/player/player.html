@@ -4,6 +4,7 @@
 {% block title %}{{ episode.title }} — {{ anime.title_ru }} | AniVerse{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 <style>
   .player-layout {
     display: grid;
@@ -16,71 +17,22 @@
   .video-wrapper {
     position: relative;
     width: 100%;
-    aspect-ratio: 16/9;
     background: #000;
     border-radius: 10px;
     overflow: hidden;
     border: 1px solid var(--border);
   }
-  .video-placeholder {
-    width: 100%; height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #0a0a0f, #140810);
-    cursor: pointer;
-  }
-  .video-thumb {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    filter: brightness(0.5);
-    position: absolute;
-    top: 0; left: 0;
-  }
-  .video-play-center {
-    position: absolute;
-    width: 64px; height: 64px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.92);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 0 40px rgba(232,0,45,0.5);
-    transition: transform 0.2s;
-  }
-  .video-play-center:hover { transform: scale(1.08); }
-  .video-controls {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    padding: 10px 14px 12px;
-    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
-  }
-  .progress-bar {
+  .video-wrapper video {
     width: 100%;
-    height: 3px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 10px;
-    margin-bottom: 10px;
-    cursor: pointer;
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--red);
-    border-radius: 10px;
-    width: 12%;
-    position: relative;
-  }
-  .progress-fill::after {
-    content: '';
-    position: absolute;
-    right: -5px; top: -3px;
-    width: 9px; height: 9px;
-    border-radius: 50%;
-    background: #fff;
+    height: auto;
+    max-height: 80vh;
   }
   .player-sidebar {
     border-left: 1px solid var(--border);
     background: rgba(8,8,12,0.9);
     padding: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 60px);
   }
   .sidebar-tabs {
     display: flex;
@@ -146,6 +98,42 @@
     color: rgba(255,200,100,0.8);
     line-height: 1.5;
   }
+  .episode-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .episode-item {
+    aspect-ratio: 16/9;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .episode-item:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--red);
+  }
+  .episode-item.active {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+  }
+  /* Plyr customization */
+  .plyr {
+    --plyr-color-main: var(--red);
+    --plyr-video-background: #000;
+  }
+  .plyr--full-ui input[type=range] {
+    color: var(--red);
+  }
 </style>
 {% endblock %}
 
@@ -167,30 +155,42 @@
   <div class="player-layout">
     <div class="player-main">
       <div class="video-wrapper">
-        <img class="video-thumb" src="{{ anime.poster.url }}" alt="episode" onerror="this.src='https://i.imgur.com/Qz3RRXm.jpg'"/>
-        <div class="video-play-center" id="playBtn">
-          <svg id="playIcon" width="22" height="22" viewBox="0 0 24 24" fill="#e8002d"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          <svg id="pauseIcon" style="display:none;" width="22" height="22" viewBox="0 0 24 24" fill="#e8002d"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-        </div>
-        <div class="video-controls">
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: {{ progress }}%"></div>
-          </div>
-          <div style="display:flex; align-items:center; justify-content:space-between;">
-            <div style="display:flex; align-items:center; gap:12px;">
-              <button id="playPauseBtn" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.8);">
-                <svg id="playBtnIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                <svg id="pauseBtnIcon" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-              </button>
-              <span style="font-size:12px; color:rgba(255,255,255,0.7); font-family:'Unbounded',sans-serif;">{{ current_time }} / {{ episode.duration }}:00</span>
+        {% if player_source %}
+          {% if player_source.player_type == 'video' %}
+            <!-- Plyr с прямым видео -->
+            <video id="player" playsinline controls data-poster="{{ anime.poster.url|default:'https://i.imgur.com/Qz3RRXm.jpg' }}">
+              {% if player_source.video_file %}
+                <source src="{{ player_source.video_file.url }}" type="video/mp4" />
+              {% elif player_source.video_url %}
+                <source src="{{ player_source.video_url }}" type="video/mp4" />
+              {% endif %}
+              {% for subtitle in episode.subtitles.all %}
+                <track kind="captions" label="{{ subtitle.get_language_display }}" src="{{ subtitle.file.url }}" srclang="{{ subtitle.language }}" {% if subtitle.is_default %}default{% endif %} />
+              {% endfor %}
+            </video>
+          {% else %}
+            <!-- Iframe плеер (Anitype, Kodik и др.) -->
+            <iframe 
+              id="player-iframe"
+              width="100%" 
+              height="100%" 
+              src="{{ player_source.iframe_url|default:player_source.url }}" 
+              frameborder="0" 
+              allowfullscreen 
+              allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+              style="aspect-ratio: 16/9;"
+            ></iframe>
+          {% endif %}
+        {% else %}
+          <!-- Заглушка если нет источника -->
+          <div style="aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; background: #111;">
+            <div style="text-align: center; color: var(--text-muted);">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 16px;"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>
+              <p>Видео временно недоступно</p>
+              <p style="font-size: 12px; margin-top: 8px;">Попробуйте позже или выберите другой источник</p>
             </div>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span style="font-size:11px; background:rgba(255,255,255,0.1); padding:3px 8px; border-radius:4px; font-family:'Unbounded',sans-serif;">{{ episode.quality }}</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" style="cursor:pointer;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" style="cursor:pointer;"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-            </div>
           </div>
-        </div>
+        {% endif %}
       </div>
 
       <div style="padding: 18px 0 8px;">
@@ -213,24 +213,21 @@
     <div class="player-sidebar">
       <div class="sidebar-tabs">
         <div class="sidebar-tab active">Просмотр</div>
-        <div class="sidebar-tab">Моменты</div>
+        <div class="sidebar-tab">Эпизоды</div>
         <div class="sidebar-tab">Настройки</div>
       </div>
 
       <div class="sidebar-row">
         <span class="sidebar-label">Плеер:</span>
-        <span class="sidebar-value">Anitype</span>
-        <span class="sidebar-action">Выбрать</span>
+        <span class="sidebar-value">{{ player_source.get_player_type_display|default:"—" }}</span>
       </div>
       <div class="sidebar-row">
         <span class="sidebar-label">Озвучка:</span>
-        <span class="sidebar-value">{{ voice_actor|default:"Shachiburi" }}</span>
-        <span class="sidebar-action">Выбрать</span>
+        <span class="sidebar-value">{{ voice_actor|default:"—" }}</span>
       </div>
       <div class="sidebar-row" style="border-bottom:none;">
         <span class="sidebar-label">Эпизод:</span>
         <span class="sidebar-value">{{ episode.number }}</span>
-        <span class="sidebar-action">Выбрать</span>
       </div>
 
       <div style="margin-top:20px; margin-bottom:10px; font-size:12px; color:var(--text-muted); font-family:'Unbounded',sans-serif; font-weight:600;">Быстрые действия:</div>
@@ -239,9 +236,23 @@
       <button class="quick-action" onclick="nextEpisode()">▶ Следующий эпизод</button>
       <button class="quick-action" onclick="prevEpisode()">◀ Предыдущий эпизод</button>
 
+      {% if player_source and player_source.player_type != 'video' %}
       <div class="warning-box">
-        <strong style="display:block; margin-bottom:4px;">⚠ Предупреждение</strong>
-        Плеер AniType находится в раннем доступе. Если возникают проблемы — смените плеер на Kodik
+        <strong style="display:block; margin-bottom:4px;">ℹ️ Информация</strong>
+        Видео загружено с внешнего источника. Если возникают проблемы — попробуйте обновить страницу или выбрать другой источник.
+      </div>
+      {% endif %}
+      
+      <!-- Список эпизодов -->
+      <div style="margin-top:24px;">
+        <div style="font-size:12px; color:var(--text-muted); font-family:'Unbounded',sans-serif; font-weight:600; margin-bottom:10px;">Эпизоды сезона:</div>
+        <div class="episode-list">
+          {% for ep in season_episodes %}
+          <div class="episode-item {% if ep.id == episode.id %}active{% endif %}" onclick="window.location.href='/player/{{ ep.id }}/'">
+            {{ ep.number }}
+          </div>
+          {% endfor %}
+        </div>
       </div>
     </div>
   </div>
@@ -249,37 +260,60 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 <script>
-  let playing = false;
-  const playBtn = document.getElementById('playBtn');
-  const playIcon = document.getElementById('playIcon');
-  const pauseIcon = document.getElementById('pauseIcon');
-  const playPauseBtn = document.getElementById('playPauseBtn');
-  const playBtnIcon = document.getElementById('playBtnIcon');
-  const pauseBtnIcon = document.getElementById('pauseBtnIcon');
-
-  function togglePlay() {
-    playing = !playing;
-    playIcon.style.display = playing ? 'none' : 'block';
-    pauseIcon.style.display = playing ? 'block' : 'none';
-    playBtnIcon.style.display = playing ? 'none' : 'block';
-    pauseBtnIcon.style.display = playing ? 'block' : 'none';
-  }
-
-  playBtn.addEventListener('click', togglePlay);
-  playPauseBtn.addEventListener('click', togglePlay);
-
+  // Инициализация Plyr
+  {% if player_source and player_source.player_type == 'video' %}
+  const player = new Plyr('#player', {
+    controls: [
+      'play-large',
+      'play',
+      'progress',
+      'current-time',
+      'mute',
+      'volume',
+      'captions',
+      'settings',
+      'pip',
+      'airplay',
+      'fullscreen'
+    ],
+    settings: ['captions', 'quality', 'speed'],
+    speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] }
+  });
+  
+  // Сохранение прогресса
+  player.on('timeupdate', function(event) {
+    const currentTime = player.currentTime;
+    const duration = player.duration;
+    console.log('Progress:', Math.round((currentTime / duration) * 100) + '%');
+    // Здесь можно отправить прогресс на сервер
+  });
+  {% endif %}
+  
+  // Быстрые действия
   function skipForward() {
-    // Перемотка на 80 секунд вперед
-    console.log('Перемотка на 80 сек вперед');
+    {% if player_source and player_source.player_type == 'video' %}
+    player.currentTime = player.currentTime + 80;
+    {% else %}
+    alert('Перемотка недоступна для iframe плеера');
+    {% endif %}
   }
-
+  
   function nextEpisode() {
     window.location.href = '/player/{{ episode.id }}/next/';
   }
-
+  
   function prevEpisode() {
     window.location.href = '/player/{{ episode.id }}/prev/';
   }
+  
+  // Переключение вкладок
+  document.querySelectorAll('.sidebar-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
 </script>
 {% endblock %}

@@ -31,6 +31,7 @@ class AnimeAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('title_ru',)}
     filter_horizontal = ['genres', 'tags', 'studios']
     readonly_fields = ['created_at', 'updated_at', 'views_count', 'favorites_count']
+    
     fieldsets = (
         ('Основное', {
             'fields': ('title_ru', 'title_en', 'title_original', 'slug', 'description')

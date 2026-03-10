@@ -15,7 +15,7 @@ class Season(models.Model):
         unique_together = ['anime', 'number']
 
     def __str__(self):
-        return f'{self.anime.title} - Сезон {self.number}'
+        return f'{self.anime.title_ru} - Сезон {self.number}'
 
 
 class VoiceActor(models.Model):
@@ -78,25 +78,33 @@ class Episode(models.Model):
 
     def __str__(self):
         season_num = self.season.number
-        return f'{self.season.anime.title} - S{season_num}E{self.number}'
+        return f'{self.season.anime.title_ru} - S{season_num}E{self.number}'
 
     def get_anime(self):
         return self.season.anime
 
 
 class PlayerSource(models.Model):
-    """Источник плеера (Anitype, Kodik и т.д.)"""
+    """Источник плеера (Anitype, Kodik, прямое видео)"""
     PLAYER_TYPE_CHOICES = [
         ('anitype', 'Anitype'),
         ('kodik', 'Kodik'),
         ('alloha', 'Alloha'),
-        ('custom', 'Custom'),
+        ('video', 'Прямое видео (Plyr)'),
+        ('custom', 'Custom iframe'),
     ]
 
     episode = models.ForeignKey(Episode, on_delete=models.CASCADE, related_name='player_sources', verbose_name='Эпизод')
     player_type = models.CharField(max_length=20, choices=PLAYER_TYPE_CHOICES, verbose_name='Тип плеера')
-    url = models.URLField(verbose_name='URL источника')
+    
+    # Для iframe источников
+    url = models.URLField(blank=True, verbose_name='URL источника')
     iframe_url = models.URLField(blank=True, verbose_name='URL iframe')
+    
+    # Для прямого видео
+    video_file = models.FileField(upload_to='videos/episodes/', blank=True, null=True, verbose_name='Видеофайл')
+    video_url = models.URLField(blank=True, verbose_name='URL видеофайла')
+    
     quality = models.CharField(max_length=10, choices=Episode.QUALITY_CHOICES, default='720p', verbose_name='Качество')
     is_default = models.BooleanField(default=False, verbose_name='По умолчанию')
 
@@ -107,6 +115,14 @@ class PlayerSource(models.Model):
 
     def __str__(self):
         return f'{self.get_player_type_display()} - {self.episode}'
+    
+    def get_video_url(self):
+        """Получить URL видео для Plyr"""
+        if self.player_type == 'video':
+            if self.video_file:
+                return self.video_file.url
+            return self.video_url
+        return self.iframe_url or self.url
 
 
 class Subtitle(models.Model):

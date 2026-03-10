@@ -6,6 +6,10 @@ def player(request, episode_id):
     """Страница плеера"""
     episode = get_object_or_404(Episode, id=episode_id)
     anime = episode.season.anime
+    season = episode.season
+    
+    # Получаем все эпизоды сезона
+    season_episodes = Episode.objects.filter(season=season).order_by('number')
     
     # Получаем источник плеера
     player_source = episode.player_sources.filter(is_default=True).first()
@@ -27,6 +31,8 @@ def player(request, episode_id):
     context = {
         'episode': episode,
         'anime': anime,
+        'season': season,
+        'season_episodes': season_episodes,
         'player_source': player_source,
         'progress': progress,
         'current_time': current_time,
