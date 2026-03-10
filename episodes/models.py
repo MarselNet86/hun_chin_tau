@@ -1,0 +1,134 @@
+from django.db import models
+from django.utils.text import slugify
+
+
+class Season(models.Model):
+    """Сезон аниме"""
+    anime = models.ForeignKey('anime.Anime', on_delete=models.CASCADE, related_name='seasons', verbose_name='Аниме')
+    number = models.PositiveIntegerField(default=1, verbose_name='Номер сезона')
+    title = models.CharField(max_length=200, blank=True, verbose_name='Название сезона')
+
+    class Meta:
+        verbose_name = 'Сезон'
+        verbose_name_plural = 'Сезоны'
+        ordering = ['number']
+        unique_together = ['anime', 'number']
+
+    def __str__(self):
+        return f'{self.anime.title} - Сезон {self.number}'
+
+
+class VoiceActor(models.Model):
+    """Озвучка"""
+    name = models.CharField(max_length=200, verbose_name='Название озвучки')
+    slug = models.SlugField(unique=True, blank=True)
+    description = models.TextField(blank=True, verbose_name='Описание')
+    website = models.URLField(blank=True, verbose_name='Сайт')
+
+    class Meta:
+        verbose_name = 'Озвучка'
+        verbose_name_plural = 'Озвучки'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
+class Episode(models.Model):
+    """Эпизод аниме"""
+    QUALITY_CHOICES = [
+        ('360p', '360p'),
+        ('480p', '480p'),
+        ('720p', '720p'),
+        ('1080p', '1080p'),
+        ('4K', '4K'),
+    ]
+
+    season = models.ForeignKey(Season, on_delete=models.CASCADE, related_name='episodes', verbose_name='Сезон')
+    number = models.PositiveIntegerField(verbose_name='Номер эпизода')
+    title = models.CharField(max_length=300, blank=True, verbose_name='Название эпизода')
+    description = models.TextField(blank=True, verbose_name='Описание')
+    duration = models.PositiveIntegerField(default=0, help_text='Длительность в минутах', verbose_name='Длительность')
+
+    quality = models.CharField(max_length=10, choices=QUALITY_CHOICES, default='720p', verbose_name='Качество')
+    voice_actors = models.ManyToManyField(VoiceActor, related_name='episodes', blank=True, verbose_name='Озвучки')
+    has_subtitles = models.BooleanField(default=False, verbose_name='Есть субтитры')
+    subtitle_languages = models.CharField(max_length=100, blank=True, help_text='Языки субтитров через запятую', verbose_name='Языки субтитров')
+
+    released_at = models.DateField(null=True, blank=True, verbose_name='Дата выхода')
+    views_count = models.PositiveIntegerField(default=0, verbose_name='Количество просмотров')
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
+
+    class Meta:
+        verbose_name = 'Эпизод'
+        verbose_name_plural = 'Эпизоды'
+        ordering = ['season', 'number']
+        unique_together = ['season', 'number']
+        indexes = [
+            models.Index(fields=['season', 'number']),
+            models.Index(fields=['-released_at']),
+        ]
+
+    def __str__(self):
+        season_num = self.season.number
+        return f'{self.season.anime.title} - S{season_num}E{self.number}'
+
+    def get_anime(self):
+        return self.season.anime
+
+
+class PlayerSource(models.Model):
+    """Источник плеера (Anitype, Kodik и т.д.)"""
+    PLAYER_TYPE_CHOICES = [
+        ('anitype', 'Anitype'),
+        ('kodik', 'Kodik'),
+        ('alloha', 'Alloha'),
+        ('custom', 'Custom'),
+    ]
+
+    episode = models.ForeignKey(Episode, on_delete=models.CASCADE, related_name='player_sources', verbose_name='Эпизод')
+    player_type = models.CharField(max_length=20, choices=PLAYER_TYPE_CHOICES, verbose_name='Тип плеера')
+    url = models.URLField(verbose_name='URL источника')
+    iframe_url = models.URLField(blank=True, verbose_name='URL iframe')
+    quality = models.CharField(max_length=10, choices=Episode.QUALITY_CHOICES, default='720p', verbose_name='Качество')
+    is_default = models.BooleanField(default=False, verbose_name='По умолчанию')
+
+    class Meta:
+        verbose_name = 'Источник плеера'
+        verbose_name_plural = 'Источники плеера'
+        ordering = ['-is_default', 'player_type']
+
+    def __str__(self):
+        return f'{self.get_player_type_display()} - {self.episode}'
+
+
+class Subtitle(models.Model):
+    """Субтитры для эпизода"""
+    LANGUAGE_CHOICES = [
+        ('ru', 'Русский'),
+        ('en', 'English'),
+        ('es', 'Español'),
+        ('fr', 'Français'),
+        ('de', 'Deutsch'),
+        ('ja', '日本語'),
+    ]
+
+    episode = models.ForeignKey(Episode, on_delete=models.CASCADE, related_name='subtitles', verbose_name='Эпизод')
+    language = models.CharField(max_length=10, choices=LANGUAGE_CHOICES, verbose_name='Язык')
+    file = models.FileField(upload_to='subtitles/', verbose_name='Файл субтитров')
+    is_default = models.BooleanField(default=False, verbose_name='По умолчанию')
+
+    class Meta:
+        verbose_name = 'Субтитр'
+        verbose_name_plural = 'Субтитры'
+        ordering = ['language']
+
+    def __str__(self):
+        return f'{self.episode} - {self.get_language_display()}'

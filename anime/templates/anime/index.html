@@ -1,0 +1,104 @@
+{% extends 'anime/base.html' %}
+{% load static %}
+
+{% block title %}AniVerse — смотри аниме{% endblock %}
+
+{% block content %}
+<div class="content">
+  {% include 'includes/nav.html' %}
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-image"></div>
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Топ сезона
+      </div>
+      <h1 class="hero-title">Магическая<br>Битва 2</h1>
+      <div class="hero-meta">
+        <span class="rating">9.15</span>
+        <span>•</span>
+        <span>2024</span>
+        <span>•</span>
+        <span>Онгоинг</span>
+        <span>•</span>
+        <span>16+</span>
+      </div>
+      <p class="hero-description">Итадори Юдзи продолжает путь проклятого мага. Инцидент в Сибуе изменил всё — теперь мир стоит на краю войны между живыми и мёртвыми.</p>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <button class="btn-primary" onclick="window.location.href='/player/1/'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Доступно в 4K
+        </button>
+        <button class="btn-secondary" onclick="openModal(featuredAnime)">Подробнее</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- NOW WATCHING -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-title">Сейчас смотрят</div>
+    <div class="cards-row">
+      {% for anime in now_watching %}
+      <div class="card" onclick="openModal({{ anime|safe }})">
+        <img src="{{ anime.img }}" alt="{{ anime.title }}" loading="lazy"/>
+        <div class="card-badge">{{ anime.rating }}</div>
+        {% if anime.is_4k %}<div class="card-4k">4K</div>{% endif %}
+        <div class="card-info">
+          <div class="card-title">{{ anime.title }}</div>
+        </div>
+        <div class="card-overlay">
+          <div class="play-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#e8002d"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- POPULAR -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-title">Популярное</div>
+    <div class="cards-row">
+      {% for anime in popular %}
+      <div class="card" onclick="openModal({{ anime|safe }})">
+        <img src="{{ anime.img }}" alt="{{ anime.title }}" loading="lazy"/>
+        <div class="card-badge">{{ anime.rating }}</div>
+        {% if anime.is_4k %}<div class="card-4k">4K</div>{% endif %}
+        <div class="card-info">
+          <div class="card-title">{{ anime.title }}</div>
+        </div>
+        <div class="card-overlay">
+          <div class="play-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#e8002d"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const featuredAnime = {
+    id: 1,
+    title: 'Магическая Битва 2',
+    rating: '9.15',
+    year: '2024',
+    genres: ['Экшен', 'Фэнтези', 'Сёнен'],
+    desc: 'Итадори Юдзи продолжает путь проклятого мага. Инцидент в Сибуе изменил всё — теперь мир стоит на краю войны между живыми и мёртвыми.',
+    img: 'https://i.imgur.com/tCF58S3.jpg'
+  };
+
+  const animeList = {{ anime_data|safe }};
+
+  function getAnimeById(id) {
+    return animeList.find(a => a.id === id);
+  }
+</script>
+{% endblock %}

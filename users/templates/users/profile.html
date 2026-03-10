@@ -1,0 +1,119 @@
+{% extends 'anime/base.html' %}
+{% load static %}
+
+{% block title %}Профиль | AniVerse{% endblock %}
+
+{% block extra_css %}
+<style>
+  .profile-page {
+    min-height: 100vh;
+    padding: 80px 60px 60px;
+  }
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--red);
+  }
+  .profile-info h1 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .profile-meta {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .profile-section {
+    margin-bottom: 32px;
+  }
+  .profile-section-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .profile-section-title::before {
+    content: '';
+    width: 3px;
+    height: 18px;
+    background: var(--red);
+    border-radius: 2px;
+  }
+  .logout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .logout-btn:hover {
+    background: rgba(255,255,255,0.15);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content profile-page">
+  {% include 'includes/nav.html' %}
+  
+  <div class="profile-header">
+    <div class="profile-avatar">{{ user.username|slice:":1"|upper }}</div>
+    <div class="profile-info">
+      <h1>{{ user.username }}</h1>
+      <div class="profile-meta">
+        {% if user.email %}{{ user.email }}{% endif %}
+        {% if user.date_joined %} • На сайте с {{ user.date_joined|date:"d.m.Y" }}{% endif %}
+      </div>
+    </div>
+    <div class="ml-auto">
+      <a href="{% url 'users:logout' %}" class="logout-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Выйти
+      </a>
+    </div>
+  </div>
+  
+  <div class="profile-section">
+    <div class="profile-section-title">Мои закладки</div>
+    <p style="color: var(--text-muted); font-size: 14px;">Здесь будут отображаться ваши закладки с аниме</p>
+  </div>
+  
+  <div class="profile-section">
+    <div class="profile-section-title">История просмотров</div>
+    <p style="color: var(--text-muted); font-size: 14px;">Здесь будет отображаться история просмотренных эпизодов</p>
+  </div>
+</div>
+{% endblock %}

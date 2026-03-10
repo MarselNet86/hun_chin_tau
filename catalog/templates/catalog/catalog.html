@@ -1,0 +1,170 @@
+{% extends 'anime/base.html' %}
+{% load static %}
+
+{% block title %}Каталог аниме | AniVerse{% endblock %}
+
+{% block extra_css %}
+<style>
+  .catalog-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 24px;
+    padding: 80px 60px 60px;
+    min-height: 100vh;
+  }
+  .filters-panel {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    height: fit-content;
+  }
+  .filter-group {
+    margin-bottom: 20px;
+  }
+  .filter-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .filter-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .filter-option:hover { color: #fff; }
+  .filter-checkbox {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.05);
+    cursor: pointer;
+  }
+  .catalog-content {
+    min-height: 500px;
+  }
+  .catalog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .catalog-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .catalog-sort {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sort-select {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #fff;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .anime-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+  {% include 'includes/nav.html' %}
+  
+  <div class="catalog-layout">
+    <aside class="filters-panel">
+      <div class="filter-group">
+        <div class="filter-title">Жанры</div>
+        {% for genre in genres %}
+        <label class="filter-option">
+          <input type="checkbox" class="filter-checkbox" name="genre" value="{{ genre.id }}">
+          {{ genre.name }}
+        </label>
+        {% endfor %}
+      </div>
+      
+      <div class="filter-group">
+        <div class="filter-title">Статус</div>
+        <label class="filter-option">
+          <input type="radio" class="filter-checkbox" name="status" value="ongoing" {% if status == 'ongoing' %}checked{% endif %}>
+          Онгоинг
+        </label>
+        <label class="filter-option">
+          <input type="radio" class="filter-checkbox" name="status" value="completed" {% if status == 'completed' %}checked{% endif %}>
+          Завершено
+        </label>
+        <label class="filter-option">
+          <input type="radio" class="filter-checkbox" name="status" value="announced">
+          Анонсировано
+        </label>
+      </div>
+      
+      <div class="filter-group">
+        <div class="filter-title">Год</div>
+        <select class="sort-select" style="width: 100%;">
+          <option value="">Все годы</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+          <option value="2022">2022</option>
+        </select>
+      </div>
+    </aside>
+    
+    <main class="catalog-content">
+      <div class="catalog-header">
+        <h1 class="catalog-title">Каталог аниме</h1>
+        <div class="catalog-sort">
+          <span style="font-size: 13px; color: var(--text-muted);">Сортировать:</span>
+          <select class="sort-select" onchange="window.location.href='?sort='+this.value">
+            <option value="-year" {% if sort == '-year' %}selected{% endif %}>По году (новые)</option>
+            <option value="year" {% if sort == 'year' %}selected{% endif %}>По году (старые)</option>
+            <option value="-score" {% if sort == '-score' %}selected{% endif %}>По рейтингу</option>
+            <option value="-views_count" {% if sort == '-views_count' %}selected{% endif %}>По просмотрам</option>
+            <option value="title_ru" {% if sort == 'title_ru' %}selected{% endif %}>По названию (А-Я)</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="anime-grid">
+        {% for anime in animes %}
+        <div class="card" onclick="window.location.href='/anime/{{ anime.slug }}/'">
+          <img src="{{ anime.poster.url|default:'https://i.imgur.com/tCF58S3.jpg' }}" alt="{{ anime.title_ru }}" loading="lazy"/>
+          <div class="card-badge">{{ anime.score|default:"N/A" }}</div>
+          {% if anime.status == 'ongoing' %}
+          <div style="position:absolute;bottom:8px;left:8px;background:var(--red);border-radius:3px;padding:2px 5px;font-family:'Unbounded',sans-serif;font-size:9px;font-weight:700;">ONGOING</div>
+          {% endif %}
+          <div class="card-info">
+            <div class="card-title">{{ anime.title_ru }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: var(--text-muted);">
+          <p style="font-size: 16px; margin-bottom: 10px;">Ничего не найдено</p>
+          <p style="font-size: 13px;">Попробуйте изменить параметры фильтра</p>
+        </div>
+        {% endfor %}
+      </div>
+    </main>
+  </div>
+</div>
+{% endblock %}
