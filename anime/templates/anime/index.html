@@ -1,7 +1,7 @@
 {% extends 'anime/base.html' %}
 {% load static %}
 
-{% block title %}AniVerse — смотри аниме{% endblock %}
+{% block title %}HunChinTau — смотри аниме{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -20,7 +20,8 @@
 <div class="content">
   {% include 'includes/nav.html' %}
 
-  <!-- HERO WITH VIDEO -->
+  <!-- HERO -->
+  {% if hero_anime %}
   <section class="hero">
     <div class="hero-bg"></div>
     <video class="hero-video" autoplay muted loop playsinline id="heroVideo">
@@ -32,36 +33,39 @@
         <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         Топ сезона
       </div>
-      <h1 class="hero-title">Убийца<br>Семь</h1>
+      <h1 class="hero-title">{{ hero_anime.title_ru }}</h1>
       <div class="hero-meta">
-        <span class="rating">8.92</span>
+        <span class="rating">{{ hero_anime.score|default:"N/A" }}</span>
         <span>•</span>
-        <span>2024</span>
+        <span>{{ hero_anime.year|default:"—" }}</span>
         <span>•</span>
-        <span>Онгоинг</span>
+        <span>{{ hero_anime.get_status_display }}</span>
         <span>•</span>
-        <span>16+</span>
+        <span>{{ hero_anime.get_rating_display }}</span>
       </div>
-      <p class="hero-description">Убийца по прозвищу Семь теряет память и становится парикмахером. Но прошлое настигает его — он был элитным ассасином организации «Теневая организация». Теперь ему предстоит выбрать между мирной жизнью и возвращением к кровавому ремеслу.</p>
+      <p class="hero-description">{{ hero_anime.description|default:"Описание отсутствует..."|truncatechars:200 }}</p>
       <div style="display:flex; gap:12px; align-items:center;">
-        <button class="btn-primary" onclick="window.location.href='/player/1/'">
+        {% if hero_first_episode %}
+        <button class="btn-primary" onclick="window.location.href='/player/{{ hero_first_episode.id }}/'">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
           Смотреть
         </button>
-        <button class="btn-secondary" onclick="openModal(featuredAnime)">Подробнее</button>
+        {% endif %}
+        <button class="btn-secondary" onclick="window.location.href='{% url 'anime:detail' hero_anime.slug %}'">Подробнее</button>
       </div>
     </div>
     <div class="hero-mute" id="heroMuteBtn">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
     </div>
   </section>
+  {% endif %}
 
   <!-- NOW WATCHING -->
-  <section class="section" style="padding-top:0;">
+  <section class="section" style="margin-top:25px;">
     <div class="section-title">Сейчас смотрят</div>
     <div class="cards-row">
       {% for anime in now_watching %}
-      <div class="card" onclick="openModal({{ anime|safe }})">
+      <div class="card" onclick="window.location.href='{% url 'anime:detail' anime.slug %}'" style="cursor: pointer;">
         <img src="{{ anime.img }}" alt="{{ anime.title }}" loading="lazy"/>
         <div class="card-badge">{{ anime.rating }}</div>
         {% if anime.is_4k %}<div class="card-4k">4K</div>{% endif %}
@@ -83,7 +87,7 @@
     <div class="section-title">Популярное</div>
     <div class="cards-row">
       {% for anime in popular %}
-      <div class="card" onclick="openModal({{ anime|safe }})">
+      <div class="card" onclick="window.location.href='{% url 'anime:detail' anime.slug %}'" style="cursor: pointer;">
         <img src="{{ anime.img }}" alt="{{ anime.title }}" loading="lazy"/>
         <div class="card-badge">{{ anime.rating }}</div>
         {% if anime.is_4k %}<div class="card-4k">4K</div>{% endif %}
@@ -104,16 +108,7 @@
 
 {% block scripts %}
 <script>
-  const featuredAnime = {
-    id: 1,
-    title: 'Убийца Семь',
-    rating: '8.92',
-    year: '2024',
-    genres: ['Экшен', 'Комедия', 'Сёнен'],
-    desc: 'Убийца по прозвищу Семь теряет память и становится парикмахером. Но прошлое настигает его — он был элитным ассасином организации «Теневая организация». Теперь ему предстоит выбрать между мирной жизнью и возвращением к кровавому ремеслу.',
-    img: 'https://i.imgur.com/tCF58S3.jpg'
-  };
-
+  const featuredAnime = {{ hero_data|safe }};
   const animeList = {{ anime_data|safe }};
 
   function getAnimeById(id) {

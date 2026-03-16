@@ -5,5 +5,6 @@ app_name = 'anime'
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('<slug:slug>/', views.anime_detail, name='detail'),
+    path('search/', views.search_anime, name='search'),
+    path('anime/<slug:slug>/', views.anime_detail, name='detail'),
 ]
