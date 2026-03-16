@@ -107,21 +107,17 @@
 
 {% block content %}
 <div class="content">
-  <nav>
-    <div class="logo">HunChinTau</div>
-    <div class="nav-link" onclick="window.history.back()" style="cursor:pointer;">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline; margin-right:6px;"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
-      Назад к релизу
-    </div>
-    <div class="ml-auto flex items-center gap-2">
-      <div class="nav-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-      </div>
-    </div>
-  </nav>
+  {% include 'includes/nav.html' %}
 
   <div class="player-layout">
     <div class="player-main">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <a href="/anime/{{ anime.slug }}/" style="display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-muted)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+          Назад к релизу
+        </a>
+      </div>
+
       <div class="video-wrapper">
         {% if player_source %}
           {% if player_source.player_type == 'video' %}
