@@ -19,13 +19,33 @@
     width: 100%;
     background: #000;
     border-radius: 10px;
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid var(--border);
+    z-index: 1;
   }
   .video-wrapper video {
     width: 100%;
     height: auto;
     max-height: 80vh;
+    display: block;
+  }
+  .video-wrapper .plyr {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .plyr__controls {
+    pointer-events: all !important;
+  }
+  .plyr__control--overlaid {
+    pointer-events: all !important;
+  }
+  .plyr__progress {
+    pointer-events: all !important;
+    cursor: pointer;
+  }
+  .plyr__progress__slider {
+    pointer-events: all !important;
   }
   .player-sidebar {
     border-left: 1px solid var(--border);
@@ -158,7 +178,7 @@
         {% if player_source %}
           {% if player_source.player_type == 'video' %}
             <!-- Plyr с прямым видео -->
-            <video id="player" playsinline controls data-poster="{{ anime.poster.url|default:'https://i.imgur.com/Qz3RRXm.jpg' }}">
+            <video id="player" playsinline crossorigin="anonymous" data-poster="{{ anime.poster.url|default:'https://i.imgur.com/Qz3RRXm.jpg' }}">
               {% if player_source.video_file %}
                 <source src="{{ player_source.video_file.url }}" type="video/mp4" />
               {% elif player_source.video_url %}
@@ -232,6 +252,7 @@
 
       <div style="margin-top:20px; margin-bottom:10px; font-size:12px; color:var(--text-muted); font-family:'Unbounded',sans-serif; font-weight:600;">Быстрые действия:</div>
 
+      <button class="quick-action" onclick="skipBack()">⏪ Перемотать на 10 сек.</button>
       <button class="quick-action" onclick="skipForward()">⏩ Перемотать на 80 сек.</button>
       <button class="quick-action" onclick="nextEpisode()">▶ Следующий эпизод</button>
       <button class="quick-action" onclick="prevEpisode()">◀ Предыдущий эпизод</button>
@@ -262,52 +283,141 @@
 {% block scripts %}
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 <script>
-  // Инициализация Plyr
-  {% if player_source and player_source.player_type == 'video' %}
-  const player = new Plyr('#player', {
-    controls: [
-      'play-large',
-      'play',
-      'progress',
-      'current-time',
-      'mute',
-      'volume',
-      'captions',
-      'settings',
-      'pip',
-      'airplay',
-      'fullscreen'
-    ],
-    settings: ['captions', 'quality', 'speed'],
-    speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] }
+  // Глобальная переменная плеера
+  let player = null;
+
+  // Информация о источнике плеера
+  const player_source = {
+    player_type: '{{ player_source.player_type|default:"video" }}'
+  };
+
+  // Инициализация Plyr после загрузки DOM
+  document.addEventListener('DOMContentLoaded', function() {
+    {% if player_source and player_source.player_type == 'video' %}
+    const videoElement = document.getElementById('player');
+    if (videoElement) {
+      player = new Plyr(videoElement, {
+        controls: [
+          'play-large',
+          'play',
+          'progress',
+          'current-time',
+          'mute',
+          'volume',
+          'captions',
+          'settings',
+          'pip',
+          'airplay',
+          'fullscreen'
+        ],
+        settings: ['captions', 'quality', 'speed'],
+        speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] }
+      });
+
+      // Логирование событий
+      player.on('ready', function() {
+        console.log('Plyr ready');
+      });
+
+      player.on('loadedmetadata', function() {
+        console.log('Video loaded, duration:', player.duration);
+      });
+
+      player.on('seeking', function(e) {
+        console.log('Seeking from', e.detail ? e.detail.seekTime : 'no detail', 'to', player.currentTime);
+      });
+
+      player.on('seeked', function() {
+        console.log('Seeked to:', player.currentTime);
+      });
+
+      // Отладка кликов по прогресс-бару
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.plyr__progress')) {
+          console.log('Clicked on progress bar');
+        }
+      });
+
+      player.on('timeupdate', function() {
+        // Тихое логирование только для отладки
+        // console.log('Time:', player.currentTime);
+      });
+
+      player.on('error', function(event) {
+        console.error('Plyr error:', event);
+      });
+
+      // Проверка загрузки видео
+      videoElement.addEventListener('error', function(e) {
+        console.error('Video error:', videoElement.error);
+      });
+
+      videoElement.addEventListener('loadeddata', function() {
+        console.log('Video data loaded');
+      });
+
+      videoElement.addEventListener('canplay', function() {
+        console.log('Video can play, duration:', videoElement.duration);
+      });
+
+      // Обработка клавиш для перемотки
+      document.addEventListener('keydown', function(e) {
+        if (!player || player.duration === Infinity || !player.duration) return;
+
+        // Пробел - пауза/воспроизведение
+        if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+          e.preventDefault();
+          if (player.playing) {
+            player.pause();
+          } else {
+            player.play();
+          }
+        }
+
+        // Стрелки - перемотка
+        if (e.code === 'ArrowLeft') {
+          e.preventDefault();
+          player.currentTime = Math.max(0, player.currentTime - 10);
+        }
+        if (e.code === 'ArrowRight') {
+          e.preventDefault();
+          player.currentTime = Math.min(player.duration, player.currentTime + 10);
+        }
+
+        // Цифры - перемотка на процент
+        if (e.key >= '0' && e.key <= '9' && e.target.tagName !== 'INPUT') {
+          e.preventDefault();
+          const percent = parseInt(e.key) / 10;
+          player.currentTime = player.duration * percent;
+        }
+      });
+    }
+    {% endif %}
   });
-  
-  // Сохранение прогресса
-  player.on('timeupdate', function(event) {
-    const currentTime = player.currentTime;
-    const duration = player.duration;
-    console.log('Progress:', Math.round((currentTime / duration) * 100) + '%');
-    // Здесь можно отправить прогресс на сервер
-  });
-  {% endif %}
-  
+
   // Быстрые действия
   function skipForward() {
-    {% if player_source and player_source.player_type == 'video' %}
-    player.currentTime = player.currentTime + 80;
-    {% else %}
-    alert('Перемотка недоступна для iframe плеера');
-    {% endif %}
+    if (player && player_source.player_type === 'video' && player.duration && player.duration !== Infinity) {
+      player.currentTime = Math.min(player.duration, player.currentTime + 80);
+    } else {
+      alert('Перемотка недоступна');
+    }
   }
-  
+
+  function skipBack() {
+    if (player && player_source.player_type === 'video' && player.duration && player.duration !== Infinity) {
+      player.currentTime = Math.max(0, player.currentTime - 10);
+    }
+  }
+
   function nextEpisode() {
     window.location.href = '/player/{{ episode.id }}/next/';
   }
-  
+
   function prevEpisode() {
     window.location.href = '/player/{{ episode.id }}/prev/';
   }
-  
+
   // Переключение вкладок
   document.querySelectorAll('.sidebar-tab').forEach(tab => {
     tab.addEventListener('click', function() {

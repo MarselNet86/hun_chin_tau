@@ -7,7 +7,7 @@
 <style>
   .catalog-layout {
     display: grid;
-    grid-template-columns: 240px 1fr;
+    grid-template-columns: 280px 1fr;
     gap: 24px;
     padding: 80px 60px 60px;
     min-height: 100vh;
@@ -21,17 +21,47 @@
   }
   .filter-group {
     margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .filter-group:last-child {
+    border-bottom: none;
   }
   .filter-title {
     font-family: 'Unbounded', sans-serif;
     font-size: 12px;
     font-weight: 600;
     color: var(--text-muted);
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-  .filter-option {
+  .filter-select {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    color: #fff;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .filter-select:hover, .filter-select:focus {
+    border-color: rgba(255,255,255,0.2);
+  }
+  .filter-select option {
+    background: #0d0d12;
+    color: #fff;
+  }
+  .filter-checkbox-group {
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .filter-checkbox-item {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -41,7 +71,7 @@
     cursor: pointer;
     transition: color 0.2s;
   }
-  .filter-option:hover { color: #fff; }
+  .filter-checkbox-item:hover { color: #fff; }
   .filter-checkbox {
     width: 16px;
     height: 16px;
@@ -49,6 +79,56 @@
     border: 1px solid var(--border);
     background: rgba(255,255,255,0.05);
     cursor: pointer;
+    accent-color: rgba(255,255,255,0.3);
+  }
+  .range-slider {
+    width: 100%;
+    -webkit-appearance: none;
+    background: rgba(255,255,255,0.1);
+    height: 4px;
+    border-radius: 2px;
+    outline: none;
+  }
+  .range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .range-slider::-webkit-slider-thumb:hover {
+    background: rgba(255,255,255,0.5);
+  }
+  .range-values {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Unbounded', sans-serif;
+  }
+  .search-btn {
+    width: 100%;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 12px;
+    color: #fff;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .search-btn:hover {
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.25);
   }
   .catalog-content {
     min-height: 500px;
@@ -78,11 +158,37 @@
     font-family: 'Unbounded', sans-serif;
     font-size: 12px;
     cursor: pointer;
+    outline: none;
   }
   .anime-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 16px;
+  }
+  .active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+  }
+  .filter-tag-remove {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+  .filter-tag-remove:hover {
+    opacity: 1;
   }
 </style>
 {% endblock %}
@@ -90,52 +196,85 @@
 {% block content %}
 <div class="content">
   {% include 'includes/nav.html' %}
-  
+
   <div class="catalog-layout">
     <aside class="filters-panel">
-      <div class="filter-group">
-        <div class="filter-title">Жанры</div>
-        {% for genre in genres %}
-        <label class="filter-option">
-          <input type="checkbox" class="filter-checkbox" name="genre" value="{{ genre.id }}">
-          {{ genre.name }}
-        </label>
-        {% endfor %}
-      </div>
-      
-      <div class="filter-group">
-        <div class="filter-title">Статус</div>
-        <label class="filter-option">
-          <input type="radio" class="filter-checkbox" name="status" value="ongoing" {% if status == 'ongoing' %}checked{% endif %}>
-          Онгоинг
-        </label>
-        <label class="filter-option">
-          <input type="radio" class="filter-checkbox" name="status" value="completed" {% if status == 'completed' %}checked{% endif %}>
-          Завершено
-        </label>
-        <label class="filter-option">
-          <input type="radio" class="filter-checkbox" name="status" value="announced">
-          Анонсировано
-        </label>
-      </div>
-      
-      <div class="filter-group">
-        <div class="filter-title">Год</div>
-        <select class="sort-select" style="width: 100%;">
-          <option value="">Все годы</option>
-          <option value="2024">2024</option>
-          <option value="2023">2023</option>
-          <option value="2022">2022</option>
-        </select>
-      </div>
+      <form id="catalogFilter" method="get">
+        <!-- Жанры -->
+        <div class="filter-group">
+          <div class="filter-title">Жанры</div>
+          <div class="filter-checkbox-group">
+            {% for genre in genres %}
+            <label class="filter-checkbox-item">
+              <input type="checkbox" class="filter-checkbox" name="genre" value="{{ genre.id }}" {% if genre.id|stringformat:"s" in selected_genres %}checked{% endif %}>
+              {{ genre.name }}
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Статус -->
+        <div class="filter-group">
+          <div class="filter-title">Статус</div>
+          <select class="filter-select" name="status">
+            <option value="">Все статусы</option>
+            <option value="ongoing" {% if status == 'ongoing' %}selected{% endif %}>Онгоинг</option>
+            <option value="completed" {% if status == 'completed' %}selected{% endif %}>Завершено</option>
+            <option value="announced" {% if status == 'announced' %}selected{% endif %}>Анонсировано</option>
+            <option value="hiatus" {% if status == 'hiatus' %}selected{% endif %}>На паузе</option>
+          </select>
+        </div>
+
+        <!-- Озвучка -->
+        <div class="filter-group">
+          <div class="filter-title">Озвучка</div>
+          <select class="filter-select" name="voice">
+            <option value="">Любая озвучка</option>
+            {% for va in voice_actors %}
+            <option value="{{ va.id }}" {% if selected_voice == va.id|stringformat:"s" %}selected{% endif %}>{{ va.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Год -->
+        <div class="filter-group">
+          <div class="filter-title">Год выпуска</div>
+          <select class="filter-select" name="year">
+            <option value="">Все годы</option>
+            {% for y in years %}
+            <option value="{{ y }}" {% if selected_year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Рейтинг -->
+        <div class="filter-group">
+          <div class="filter-title">Минимальный рейтинг</div>
+          <input type="range" class="range-slider" name="min_score" min="0" max="10" step="0.1" value="{{ min_score|default:0 }}">
+          <div class="range-values">
+            <span>0</span>
+            <span id="scoreValue">{{ min_score|default:0 }}</span>
+            <span>10</span>
+          </div>
+        </div>
+
+        <!-- Кнопка поиска -->
+        <button type="submit" class="search-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          Применить фильтры
+        </button>
+      </form>
     </aside>
-    
+
     <main class="catalog-content">
       <div class="catalog-header">
         <h1 class="catalog-title">Каталог аниме</h1>
         <div class="catalog-sort">
           <span style="font-size: 13px; color: var(--text-muted);">Сортировать:</span>
-          <select class="sort-select" onchange="window.location.href='?sort='+this.value">
+          <select class="sort-select" onchange="updateSort(this.value)">
             <option value="-year" {% if sort == '-year' %}selected{% endif %}>По году (новые)</option>
             <option value="year" {% if sort == 'year' %}selected{% endif %}>По году (старые)</option>
             <option value="-score" {% if sort == '-score' %}selected{% endif %}>По рейтингу</option>
@@ -144,14 +283,61 @@
           </select>
         </div>
       </div>
-      
+
+      <!-- Активные фильтры -->
+      {% if selected_genres or status or selected_voice or selected_year or min_score %}
+      <div class="active-filters">
+        {% if selected_genres %}
+          {% for genre in genres %}
+            {% if genre.id|stringformat:"s" in selected_genres %}
+            <span class="filter-tag">
+              {{ genre.name }}
+              <span class="filter-tag-remove" onclick="removeFilter('genre', '{{ genre.id }}')">×</span>
+            </span>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% if status %}
+        <span class="filter-tag">
+          Статус: {{ status }}
+          <span class="filter-tag-remove" onclick="removeFilter('status', '')">×</span>
+        </span>
+        {% endif %}
+        {% if selected_voice %}
+          {% for va in voice_actors %}
+            {% if va.id|stringformat:"s" == selected_voice %}
+            <span class="filter-tag">
+              {{ va.name }}
+              <span class="filter-tag-remove" onclick="removeFilter('voice', '')">×</span>
+            </span>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% if selected_year %}
+        <span class="filter-tag">
+          {{ selected_year }} год
+          <span class="filter-tag-remove" onclick="removeFilter('year', '')">×</span>
+        </span>
+        {% endif %}
+        {% if min_score %}
+        <span class="filter-tag">
+          Рейтинг: {{ min_score }}+
+          <span class="filter-tag-remove" onclick="removeFilter('min_score', '')">×</span>
+        </span>
+        {% endif %}
+        <span class="filter-tag" onclick="clearAllFilters()" style="cursor:pointer;background:rgba(255,255,255,0.15);">
+          Сбросить все
+        </span>
+      </div>
+      {% endif %}
+
       <div class="anime-grid">
         {% for anime in animes %}
         <div class="card" onclick="window.location.href='/anime/{{ anime.slug }}/'">
           <img src="{{ anime.poster.url|default:'https://i.imgur.com/tCF58S3.jpg' }}" alt="{{ anime.title_ru }}" loading="lazy"/>
           <div class="card-badge">{{ anime.score|default:"N/A" }}</div>
           {% if anime.status == 'ongoing' %}
-          <div style="position:absolute;bottom:8px;left:8px;background:var(--red);border-radius:3px;padding:2px 5px;font-family:'Unbounded',sans-serif;font-size:9px;font-weight:700;">ONGOING</div>
+          <div style="position:absolute;bottom:8px;left:8px;background:rgba(255,255,255,0.15);border-radius:3px;padding:2px 5px;font-family:'Unbounded',sans-serif;font-size:9px;font-weight:700;">ONGOING</div>
           {% endif %}
           <div class="card-info">
             <div class="card-title">{{ anime.title_ru }}</div>
@@ -167,4 +353,43 @@
     </main>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Обновление значения рейтинга
+  const scoreSlider = document.querySelector('.range-slider');
+  const scoreValue = document.getElementById('scoreValue');
+  if (scoreSlider && scoreValue) {
+    scoreSlider.addEventListener('input', function() {
+      scoreValue.textContent = this.value;
+    });
+  }
+
+  // Обновление сортировки
+  function updateSort(value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort', value);
+    window.location.href = url.toString();
+  }
+
+  // Удаление фильтра
+  function removeFilter(name, value) {
+    const url = new URL(window.location.href);
+    if (name === 'genre') {
+      const genres = url.searchParams.getAll('genre');
+      const newGenres = genres.filter(g => g !== value);
+      url.searchParams.delete('genre');
+      newGenres.forEach(g => url.searchParams.append('genre', g));
+    } else {
+      url.searchParams.delete(name);
+    }
+    window.location.href = url.toString();
+  }
+
+  // Сброс всех фильтров
+  function clearAllFilters() {
+    window.location.href = window.location.pathname;
+  }
+</script>
 {% endblock %}
