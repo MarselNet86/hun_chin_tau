@@ -54,28 +54,6 @@
     overflow-y: auto;
     max-height: calc(100vh - 60px);
   }
-  .sidebar-tabs {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 20px;
-  }
-  .sidebar-tab {
-    flex: 1;
-    padding: 8px;
-    text-align: center;
-    font-family: 'Unbounded', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-muted);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .sidebar-tab.active {
-    background: rgba(255,255,255,0.08);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.1);
-  }
   .sidebar-row {
     display: flex;
     align-items: center;
@@ -86,28 +64,6 @@
   }
   .sidebar-label { color: var(--text-muted); }
   .sidebar-value { font-weight: 500; }
-  .sidebar-action {
-    color: var(--red);
-    font-size: 12px;
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-  .quick-action {
-    display: block;
-    width: 100%;
-    padding: 10px 14px;
-    margin-bottom: 8px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.03);
-    color: var(--text-muted);
-    font-size: 12px;
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.2s;
-  }
-  .quick-action:hover { background: rgba(255,255,255,0.07); color: #fff; border-color: rgba(255,255,255,0.15); }
   .warning-box {
     margin-top: 16px;
     padding: 12px;
@@ -139,20 +95,12 @@
   }
   .episode-item:hover {
     background: rgba(255,255,255,0.1);
-    border-color: var(--red);
+    border-color: rgba(255,255,255,0.2);
   }
   .episode-item.active {
-    background: var(--red);
-    border-color: var(--red);
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.3);
     color: #fff;
-  }
-  /* Plyr customization */
-  .plyr {
-    --plyr-color-main: var(--red);
-    --plyr-video-background: #000;
-  }
-  .plyr--full-ui input[type=range] {
-    color: var(--red);
   }
 </style>
 {% endblock %}
@@ -231,12 +179,6 @@
     </div>
 
     <div class="player-sidebar">
-      <div class="sidebar-tabs">
-        <div class="sidebar-tab active">Просмотр</div>
-        <div class="sidebar-tab">Эпизоды</div>
-        <div class="sidebar-tab">Настройки</div>
-      </div>
-
       <div class="sidebar-row">
         <span class="sidebar-label">Плеер:</span>
         <span class="sidebar-value">{{ player_source.get_player_type_display|default:"—" }}</span>
@@ -250,22 +192,14 @@
         <span class="sidebar-value">{{ episode.number }}</span>
       </div>
 
-      <div style="margin-top:20px; margin-bottom:10px; font-size:12px; color:var(--text-muted); font-family:'Unbounded',sans-serif; font-weight:600;">Быстрые действия:</div>
-
-      <button class="quick-action" onclick="skipBack()">⏪ Перемотать на 10 сек.</button>
-      <button class="quick-action" onclick="skipForward()">⏩ Перемотать на 80 сек.</button>
-      <button class="quick-action" onclick="nextEpisode()">▶ Следующий эпизод</button>
-      <button class="quick-action" onclick="prevEpisode()">◀ Предыдущий эпизод</button>
-
       {% if player_source and player_source.player_type != 'video' %}
-      <div class="warning-box">
+      <div class="warning-box" style="margin-top:20px;">
         <strong style="display:block; margin-bottom:4px;">ℹ️ Информация</strong>
         Видео загружено с внешнего источника. Если возникают проблемы — попробуйте обновить страницу или выбрать другой источник.
       </div>
       {% endif %}
-      
-      <!-- Список эпизодов -->
-      <div style="margin-top:24px;">
+
+      <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border);">
         <div style="font-size:12px; color:var(--text-muted); font-family:'Unbounded',sans-serif; font-weight:600; margin-bottom:10px;">Эпизоды сезона:</div>
         <div class="episode-list">
           {% for ep in season_episodes %}
@@ -395,21 +329,7 @@
     {% endif %}
   });
 
-  // Быстрые действия
-  function skipForward() {
-    if (player && player_source.player_type === 'video' && player.duration && player.duration !== Infinity) {
-      player.currentTime = Math.min(player.duration, player.currentTime + 80);
-    } else {
-      alert('Перемотка недоступна');
-    }
-  }
-
-  function skipBack() {
-    if (player && player_source.player_type === 'video' && player.duration && player.duration !== Infinity) {
-      player.currentTime = Math.max(0, player.currentTime - 10);
-    }
-  }
-
+  // Навигация между эпизодами
   function nextEpisode() {
     window.location.href = '/player/{{ episode.id }}/next/';
   }
@@ -417,13 +337,5 @@
   function prevEpisode() {
     window.location.href = '/player/{{ episode.id }}/prev/';
   }
-
-  // Переключение вкладок
-  document.querySelectorAll('.sidebar-tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-      document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
-      this.classList.add('active');
-    });
-  });
 </script>
 {% endblock %}

@@ -28,7 +28,7 @@
     font-family: 'Unbounded', sans-serif;
     font-size: 28px;
     font-weight: 700;
-    color: var(--red);
+    color: rgba(255,255,255,0.8);
   }
   .profile-info h1 {
     font-family: 'Unbounded', sans-serif;
@@ -56,7 +56,7 @@
     content: '';
     width: 3px;
     height: 18px;
-    background: var(--red);
+    background: rgba(255,255,255,0.3);
     border-radius: 2px;
   }
   .logout-btn {
@@ -78,13 +78,164 @@
   .logout-btn:hover {
     background: rgba(255,255,255,0.15);
   }
+  .bookmarks-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .bookmark-tab {
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .bookmark-tab:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+  }
+  .bookmark-tab.active {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border-color: rgba(255,255,255,0.2);
+  }
+  .bookmark-count {
+    background: rgba(255,255,255,0.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    margin-left: 6px;
+  }
+  .anime-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    aspect-ratio: 3/4;
+    background: #111;
+    transition: transform 0.25s;
+    border: 1px solid var(--border);
+  }
+  .card:hover {
+    transform: scale(1.04) translateY(-4px);
+    border-color: rgba(255,255,255,0.2);
+  }
+  .card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.85);
+  }
+  .card:hover img {
+    filter: brightness(1);
+  }
+  .card-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    color: #4ade80;
+  }
+  .card-status {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.8);
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .card-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 28px 10px 10px;
+    background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%);
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: rgba(255,255,255,0.9);
+  }
+  .card-actions {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .card:hover .card-actions {
+    opacity: 1;
+  }
+  .card-action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.8);
+    border: 1px solid rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: rgba(255,255,255,0.8);
+  }
+  .card-action-btn:hover {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+  }
+  .status-select {
+    background: rgba(0,0,0,0.9);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    padding: 4px 8px;
+    color: #fff;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 10px;
+    cursor: pointer;
+    outline: none;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state svg {
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="content profile-page">
   {% include 'includes/nav.html' %}
-  
+
   <div class="profile-header">
     <div class="profile-avatar">{{ user.username|slice:":1"|upper }}</div>
     <div class="profile-info">
@@ -105,15 +256,299 @@
       </a>
     </div>
   </div>
-  
+
   <div class="profile-section">
-    <div class="profile-section-title">Мои закладки</div>
-    <p style="color: var(--text-muted); font-size: 14px;">Здесь будут отображаться ваши закладки с аниме</p>
-  </div>
-  
-  <div class="profile-section">
-    <div class="profile-section-title">История просмотров</div>
-    <p style="color: var(--text-muted); font-size: 14px;">Здесь будет отображаться история просмотренных эпизодов</p>
+    <div class="profile-section-title">
+      Мои закладки
+      <span style="font-size: 12px; color: var(--text-muted); font-weight: 400;">{{ total_bookmarks }} аниме</span>
+    </div>
+
+    <!-- Вкладки статусов -->
+    <div class="bookmarks-tabs">
+      <div class="bookmark-tab active" data-status="all">
+        Все <span class="bookmark-count">{{ total_bookmarks }}</span>
+      </div>
+      <div class="bookmark-tab" data-status="watching">
+        Смотрю <span class="bookmark-count">{{ watching|length }}</span>
+      </div>
+      <div class="bookmark-tab" data-status="completed">
+        Просмотрено <span class="bookmark-count">{{ completed|length }}</span>
+      </div>
+      <div class="bookmark-tab" data-status="planned">
+        В планах <span class="bookmark-count">{{ planned|length }}</span>
+      </div>
+      <div class="bookmark-tab" data-status="on_hold">
+        Отложено <span class="bookmark-count">{{ on_hold|length }}</span>
+      </div>
+      <div class="bookmark-tab" data-status="dropped">
+        Брошено <span class="bookmark-count">{{ dropped|length }}</span>
+      </div>
+    </div>
+
+    <!-- Сетка аниме -->
+    <div class="anime-grid" id="bookmarksGrid">
+      {% for bookmark in bookmarks %}
+      <div class="card" data-status="{{ bookmark.status }}" data-anime-id="{{ bookmark.anime.id }}" onclick="window.location.href='/anime/{{ bookmark.anime.slug }}/'">
+        <img src="{{ bookmark.anime.poster.url|default:'https://i.imgur.com/tCF58S3.jpg' }}" alt="{{ bookmark.anime.title_ru }}" loading="lazy"/>
+        <div class="card-badge">{{ bookmark.anime.score|default:"N/A" }}</div>
+        <div class="card-status">{{ bookmark.get_status_display }}</div>
+        <div class="card-info">
+          <div class="card-title">{{ bookmark.anime.title_ru }}</div>
+        </div>
+        <div class="card-actions" onclick="event.stopPropagation()">
+          <select class="status-select" onchange="updateBookmarkStatus({{ bookmark.anime.id }}, '{{ bookmark.get_status_display }}', this.value)">
+            <option value="watching" {% if bookmark.status == 'watching' %}selected{% endif %}>Смотрю</option>
+            <option value="completed" {% if bookmark.status == 'completed' %}selected{% endif %}>Просмотрено</option>
+            <option value="planned" {% if bookmark.status == 'planned' %}selected{% endif %}>В планах</option>
+            <option value="on_hold" {% if bookmark.status == 'on_hold' %}selected{% endif %}>Отложено</option>
+            <option value="dropped" {% if bookmark.status == 'dropped' %}selected{% endif %}>Брошено</option>
+          </select>
+          <div class="card-action-btn" onclick="removeBookmark({{ bookmark.anime.id }})" title="Удалить из закладок">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="empty-state" style="grid-column: 1/-1;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+        <p style="font-size: 16px; margin-bottom: 8px;">У вас пока нет закладок</p>
+        <p style="font-size: 13px;">Добавляйте аниме в закладки, чтобы отслеживать просмотренное</p>
+      </div>
+      {% endfor %}
+    </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Текущая активная вкладка
+  let currentActiveTab = 'all';
+
+  // Переключение вкладок
+  document.querySelectorAll('.bookmark-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      const status = this.dataset.status;
+
+      // Обновляем активную вкладку
+      document.querySelectorAll('.bookmark-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      currentActiveTab = status;
+
+      // Фильтруем карточки
+      filterCards(status);
+    });
+  });
+
+  // Фильтрация карточек
+  function filterCards(status) {
+    const cards = document.querySelectorAll('#bookmarksGrid .card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      // Пропускаем empty state
+      if (card.classList.contains('empty-state')) return;
+
+      const shouldShow = status === 'all' || card.dataset.status === status;
+      card.style.display = shouldShow ? 'block' : 'none';
+
+      if (shouldShow) {
+        visibleCount++;
+      }
+    });
+
+    // Показываем/скрываем empty state
+    updateEmptyState(visibleCount);
+  }
+
+  // Обновление статуса закладки
+  function updateBookmarkStatus(animeId, oldStatusText, newStatus) {
+    fetch('/users/bookmark/update/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: `anime_id=${animeId}&status=${newStatus}`
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Находим карточку
+        const card = document.querySelector(`.card[data-anime-id="${animeId}"]`);
+        if (!card) return;
+
+        // Сохраняем оригинальный display
+        const originalDisplay = card.style.display;
+
+        // Анимация исчезновения
+        card.style.transition = 'opacity 0.2s, transform 0.2s';
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.95)';
+
+        setTimeout(() => {
+          // Обновляем данные
+          card.dataset.status = newStatus;
+          card.querySelector('.card-status').textContent = get_status_text(newStatus);
+
+          // Обновляем select
+          const select = card.querySelector('.status-select');
+          if (select) {
+            select.value = newStatus;
+          }
+
+          // Возвращаем карточку
+          card.style.opacity = '1';
+          card.style.transform = 'scale(1)';
+
+          // Проверяем, должна ли карточка быть видима на текущей вкладке
+          if (currentActiveTab === 'all' || currentActiveTab === newStatus) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+
+          // Обновляем счётчики на всех вкладках
+          updateAllCounts();
+        }, 200);
+      } else {
+        alert('Ошибка обновления статуса');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Ошибка обновления статуса');
+    });
+  }
+
+  // Удаление закладки
+  function removeBookmark(animeId) {
+    if (!confirm('Удалить аниме из закладок?')) return;
+
+    fetch('/users/bookmark/toggle/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: `anime_id=${animeId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.action === 'removed') {
+        const card = document.querySelector(`.card[data-anime-id="${animeId}"]`);
+        if (card) {
+          card.style.transition = 'opacity 0.2s, transform 0.2s';
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.95)';
+
+          setTimeout(() => {
+            card.remove();
+            updateAllCounts();
+          }, 200);
+        }
+      } else if (!data.success) {
+        alert('Ошибка удаления закладки');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Ошибка удаления закладки');
+    });
+  }
+
+  // Получение текста статуса
+  function get_status_text(status) {
+    const texts = {
+      'watching': 'Смотрю',
+      'completed': 'Просмотрено',
+      'planned': 'В планах',
+      'on_hold': 'Отложено',
+      'dropped': 'Брошено'
+    };
+    return texts[status] || status;
+  }
+
+  // Обновление всех счётчиков
+  function updateAllCounts() {
+    // Считаем карточки по статусам
+    const cards = document.querySelectorAll('#bookmarksGrid .card:not(.empty-state)');
+    const counts = {
+      'all': 0,
+      'watching': 0,
+      'completed': 0,
+      'planned': 0,
+      'on_hold': 0,
+      'dropped': 0
+    };
+
+    // Считаем ВСЕ карточки, независимо от display
+    cards.forEach(card => {
+      const status = card.dataset.status;
+      if (counts[status] !== undefined) {
+        counts[status]++;
+      }
+      counts['all']++;
+    });
+
+    // Обновляем счётчики на вкладках
+    document.querySelectorAll('.bookmark-tab').forEach(tab => {
+      const status = tab.dataset.status;
+      const countEl = tab.querySelector('.bookmark-count');
+      if (countEl) {
+        countEl.textContent = counts[status] || 0;
+      }
+    });
+
+    // Обновляем empty state для текущей вкладки
+    const visibleCount = currentActiveTab === 'all'
+      ? counts['all']
+      : counts[currentActiveTab];
+    updateEmptyState(visibleCount);
+  }
+
+  // Обновление empty state
+  function updateEmptyState(count) {
+    // Удаляем существующий empty state
+    const existingEmpty = document.querySelector('#bookmarksGrid .empty-state');
+
+    if (count === 0) {
+      if (!existingEmpty) {
+        const grid = document.getElementById('bookmarksGrid');
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        emptyState.style.gridColumn = '1/-1';
+        emptyState.innerHTML = `
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+          <p style="font-size: 16px; margin-bottom: 8px;">В этой категории нет аниме</p>
+          <p style="font-size: 13px;">Добавьте аниме в закладки с этим статусом</p>
+        `;
+        grid.appendChild(emptyState);
+      }
+    } else {
+      if (existingEmpty) {
+        existingEmpty.remove();
+      }
+    }
+  }
+
+  // Инициализация при загрузке
+  document.addEventListener('DOMContentLoaded', function() {
+    const activeTab = document.querySelector('.bookmark-tab.active');
+    if (activeTab) {
+      currentActiveTab = activeTab.dataset.status;
+      filterCards(currentActiveTab);
+    }
+
+    // Инициализируем счётчики
+    updateAllCounts();
+  });
+</script>
 {% endblock %}

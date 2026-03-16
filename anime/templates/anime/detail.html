@@ -198,9 +198,9 @@
           Смотреть
         </a>
         {% endif %}
-        <button class="btn-bookmark">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          В закладки
+        <button class="btn-bookmark" id="bookmarkBtn" data-anime-id="{{ anime.id }}" data-is-bookmarked="{{ is_bookmarked|default:'false' }}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <span id="bookmarkText">{% if is_bookmarked %}В закладках{% else %}В закладки{% endif %}</span>
         </button>
       </div>
     </div>
@@ -223,4 +223,45 @@
   </div>
   {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const bookmarkBtn = document.getElementById('bookmarkBtn');
+  const bookmarkText = document.getElementById('bookmarkText');
+
+  if (bookmarkBtn) {
+    bookmarkBtn.addEventListener('click', function() {
+      const animeId = this.dataset.animeId;
+      const isBookmarked = this.dataset.isBookmarked === 'true';
+
+      fetch('/users/bookmark/toggle/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `anime_id=${animeId}&status=planned`
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          if (data.action === 'added') {
+            this.dataset.isBookmarked = 'true';
+            bookmarkText.textContent = 'В закладках';
+          } else {
+            this.dataset.isBookmarked = 'false';
+            bookmarkText.textContent = 'В закладки';
+          }
+        } else {
+          alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Ошибка при работе с закладками');
+      });
+    });
+  }
+</script>
 {% endblock %}

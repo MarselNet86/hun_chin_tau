@@ -92,17 +92,24 @@ def index(request):
 def anime_detail(request, slug):
     """Страница аниме"""
     anime = get_object_or_404(Anime, slug=slug)
-    
+
     # Получаем первый эпизод для кнопки "Смотреть"
     first_episode = Episode.objects.filter(season__anime=anime).order_by('season__number', 'number').first()
-    
+
     # Получаем все сезоны с эпизодами
     seasons = anime.seasons.prefetch_related('episodes').all()
-    
+
+    # Проверяем, есть ли аниме в закладках у пользователя
+    is_bookmarked = False
+    if request.user.is_authenticated:
+        from users.models import UserBookmark
+        is_bookmarked = UserBookmark.objects.filter(user=request.user, anime=anime).exists()
+
     context = {
         'anime': anime,
         'first_episode': first_episode,
         'seasons': seasons,
+        'is_bookmarked': is_bookmarked,
     }
-    
+
     return render(request, 'anime/detail.html', context)
