@@ -207,8 +207,8 @@ class PlayerSourceAdmin(admin.ModelAdmin):
             has_video = bool(obj.iframe_url or obj.url)
 
         if has_video:
-            return format_html('<span style="color:#4ade80;">✓ Да</span>')
-        return format_html('<span style="color:#ef4444;">✗ Нет</span>')
+            return format_html('<span style="color:{};">✓ Да</span>', '#4ade80')
+        return format_html('<span style="color:{};">✗ Нет</span>', '#ef4444')
     has_video_badge.short_description = 'Видео'
 
 
@@ -232,5 +232,5 @@ class SubtitleAdmin(admin.ModelAdmin):
     def file_link(self, obj):
         if obj.file:
             return format_html('<a href="{}" target="_blank">Скачать</a>', obj.file.url)
-        return '—'
+        return format_html('<span>—</span>')
     file_link.short_description = 'Файл'
