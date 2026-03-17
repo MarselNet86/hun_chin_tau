@@ -82,7 +82,6 @@ class Anime(models.Model):
     slug = models.SlugField(unique=True, blank=True)
     description = models.TextField(blank=True, verbose_name='Описание')
     poster = models.ImageField(upload_to='anime/posters/', blank=True, null=True, verbose_name='Постер')
-    cover = models.ImageField(upload_to='anime/covers/', blank=True, null=True, verbose_name='Обложка')
 
     genres = models.ManyToManyField(Genre, related_name='anime', blank=True, verbose_name='Жанры')
     tags = models.ManyToManyField(Tag, related_name='anime', blank=True, verbose_name='Теги')

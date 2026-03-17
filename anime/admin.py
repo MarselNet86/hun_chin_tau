@@ -85,8 +85,8 @@ class AnimeAdmin(admin.ModelAdmin):
             'description': 'Основная информация об аниме: названия и описание'
         }),
         ('🖼️ Медиа', {
-            'fields': ('poster', 'cover'),
-            'description': 'Загрузите постер и обложку'
+            'fields': ('poster',),
+            'description': 'Загрузите постер'
         }),
         ('🏷️ Классификация', {
             'fields': ('genres', 'tags', 'studios', 'rating'),
