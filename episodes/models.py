@@ -51,8 +51,6 @@ class Episode(models.Model):
 
     quality = models.CharField(max_length=10, choices=QUALITY_CHOICES, default='720p', verbose_name='Качество')
     voice_actors = models.ManyToManyField(VoiceActor, related_name='episodes', blank=True, verbose_name='Озвучки')
-    has_subtitles = models.BooleanField(default=False, verbose_name='Есть субтитры')
-    subtitle_languages = models.CharField(max_length=100, blank=True, help_text='Языки субтитров через запятую', verbose_name='Языки субтитров')
 
     released_at = models.DateField(null=True, blank=True, verbose_name='Дата выхода')
     views_count = models.PositiveIntegerField(default=0, verbose_name='Количество просмотров')
@@ -117,28 +115,3 @@ class PlayerSource(models.Model):
                 return self.video_file.url
             return self.video_url
         return self.iframe_url or self.url
-
-
-class Subtitle(models.Model):
-    """Субтитры для эпизода"""
-    LANGUAGE_CHOICES = [
-        ('ru', 'Русский'),
-        ('en', 'English'),
-        ('es', 'Español'),
-        ('fr', 'Français'),
-        ('de', 'Deutsch'),
-        ('ja', '日本語'),
-    ]
-
-    episode = models.ForeignKey(Episode, on_delete=models.CASCADE, related_name='subtitles', verbose_name='Эпизод')
-    language = models.CharField(max_length=10, choices=LANGUAGE_CHOICES, verbose_name='Язык')
-    file = models.FileField(upload_to='subtitles/', verbose_name='Файл субтитров')
-    is_default = models.BooleanField(default=False, verbose_name='По умолчанию')
-
-    class Meta:
-        verbose_name = 'Субтитр'
-        verbose_name_plural = 'Субтитры'
-        ordering = ['language']
-
-    def __str__(self):
-        return f'{self.episode} - {self.get_language_display()}'

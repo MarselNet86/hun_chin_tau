@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django import forms
 from django.utils.html import format_html
-from .models import Season, VoiceActor, Episode, PlayerSource, Subtitle
+from .models import Season, VoiceActor, Episode, PlayerSource
 
 
 class PlayerSourceForm(forms.ModelForm):
@@ -24,13 +24,6 @@ class PlayerSourceInline(admin.StackedInline):
     form = PlayerSourceForm
     verbose_name = 'Источник видео'
     verbose_name_plural = 'Источники видео'
-
-
-class SubtitleInline(admin.TabularInline):
-    model = Subtitle
-    extra = 0
-    verbose_name = 'Субтитры'
-    verbose_name_plural = 'Субтитры'
 
 
 class EpisodeInline(admin.StackedInline):
@@ -90,11 +83,11 @@ class VoiceActorAdmin(admin.ModelAdmin):
 @admin.register(Episode)
 class EpisodeAdmin(admin.ModelAdmin):
     list_display = ['get_anime_title', 'season_link', 'number', 'title', 'quality_badge', 'released_at', 'views_count']
-    list_filter = ['season__anime', 'season', 'quality', 'has_subtitles']
+    list_filter = ['season__anime', 'season', 'quality']
     search_fields = ['title', 'season__anime__title_ru', 'season__anime__title_en']
     filter_horizontal = ['voice_actors']
     readonly_fields = ['created_at', 'updated_at']
-    inlines = [PlayerSourceInline, SubtitleInline]
+    inlines = [PlayerSourceInline]
     list_per_page = 20
     verbose_name = 'Эпизод'
     verbose_name_plural = 'Эпизоды'
@@ -105,8 +98,8 @@ class EpisodeAdmin(admin.ModelAdmin):
             'description': 'Основная информация об эпизоде'
         }),
         ('⚙️ Технические', {
-            'fields': ('quality', 'duration', 'has_subtitles', 'subtitle_languages'),
-            'description': 'Качество видео и субтитры'
+            'fields': ('quality', 'duration'),
+            'description': 'Качество видео и длительность'
         }),
         ('🎙️ Озвучка', {
             'fields': ('voice_actors',),
@@ -210,27 +203,3 @@ class PlayerSourceAdmin(admin.ModelAdmin):
             return format_html('<span style="color:{};">✓ Да</span>', '#4ade80')
         return format_html('<span style="color:{};">✗ Нет</span>', '#ef4444')
     has_video_badge.short_description = 'Видео'
-
-
-@admin.register(Subtitle)
-class SubtitleAdmin(admin.ModelAdmin):
-    list_display = ['episode_link', 'language', 'is_default', 'file_link']
-    list_filter = ['language', 'is_default']
-    search_fields = ['episode__title', 'episode__season__anime__title_ru']
-    list_editable = ['is_default']
-    verbose_name = 'Субтитры'
-    verbose_name_plural = 'Субтитры'
-
-    def episode_link(self, obj):
-        return format_html(
-            '<a href="/admin/episodes/episode/{}/change/">{}</a>',
-            obj.episode.id,
-            obj.episode
-        )
-    episode_link.short_description = 'Эпизод'
-
-    def file_link(self, obj):
-        if obj.file:
-            return format_html('<a href="{}" target="_blank">Скачать</a>', obj.file.url)
-        return format_html('<span>—</span>')
-    file_link.short_description = 'Файл'

@@ -6,11 +6,31 @@ from django.dispatch import receiver
 
 class Profile(models.Model):
     """Профиль пользователя"""
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
-    bio = models.TextField(max_length=500, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='profile',
+        verbose_name='Пользователь'
+    )
+    avatar = models.ImageField(
+        upload_to='avatars/',
+        null=True,
+        blank=True,
+        verbose_name='Аватар'
+    )
+    bio = models.TextField(
+        max_length=500,
+        blank=True,
+        verbose_name='О себе'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата создания'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Дата обновления'
+    )
 
     class Meta:
         verbose_name = 'Профиль'
@@ -26,28 +46,6 @@ def create_user_profile(sender, instance, created, **kwargs):
         Profile.objects.create(user=instance)
 
 
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
-
-
-class UserAnimeHistory(models.Model):
-    """История просмотров пользователя"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='anime_history')
-    anime = models.ForeignKey('anime.Anime', on_delete=models.CASCADE)
-    watched_at = models.DateTimeField(auto_now_add=True)
-    episode = models.ForeignKey('episodes.Episode', on_delete=models.SET_NULL, null=True, blank=True)
-
-    class Meta:
-        verbose_name = 'История просмотра'
-        verbose_name_plural = 'История просмотров'
-        ordering = ['-watched_at']
-        unique_together = ['user', 'anime']
-
-    def __str__(self):
-        return f'{self.user.username} - {self.anime.title}'
-
-
 class UserBookmark(models.Model):
     """Закладки пользователя"""
     STATUS_CHOICES = [
@@ -58,17 +56,41 @@ class UserBookmark(models.Model):
         ('on_hold', 'Отложено'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookmarks')
-    anime = models.ForeignKey('anime.Anime', on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='planned')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='bookmarks',
+        verbose_name='Пользователь'
+    )
+    anime = models.ForeignKey(
+        'anime.Anime',
+        on_delete=models.CASCADE,
+        related_name='bookmarked_by',
+        verbose_name='Аниме'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='planned',
+        verbose_name='Статус'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата добавления'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Дата обновления'
+    )
 
     class Meta:
         verbose_name = 'Закладка'
         verbose_name_plural = 'Закладки'
         ordering = ['-updated_at']
         unique_together = ['user', 'anime']
+        indexes = [
+            models.Index(fields=['user', '-updated_at']),
+        ]
 
     def __str__(self):
-        return f'{self.user.username} - {self.anime.title} ({self.status})'
+        return f'{self.user.username} - {self.anime.title_ru} ({self.status})'
