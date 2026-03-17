@@ -7,7 +7,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('anime.urls', namespace='anime')),
     path('player/', include('player.urls', namespace='player')),
-    path('catalog/', include('catalog.urls', namespace='catalog')),
     path('users/', include('users.urls', namespace='users')),
 ]
 

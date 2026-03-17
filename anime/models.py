@@ -29,22 +29,6 @@ class Genre(SlugMixin):
         return self.name
 
 
-class Studio(SlugMixin):
-    """Студии, создающие аниме"""
-    name = models.CharField(max_length=200, unique=True)
-    founded_year = models.IntegerField(null=True, blank=True)
-    description = models.TextField(blank=True)
-    website = models.URLField(blank=True)
-
-    class Meta:
-        verbose_name = 'Студия'
-        verbose_name_plural = 'Студии'
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
-
-
 class Tag(SlugMixin):
     """Теги для аниме"""
     name = models.CharField(max_length=100, unique=True)
@@ -85,7 +69,6 @@ class Anime(models.Model):
 
     genres = models.ManyToManyField(Genre, related_name='anime', blank=True, verbose_name='Жанры')
     tags = models.ManyToManyField(Tag, related_name='anime', blank=True, verbose_name='Теги')
-    studios = models.ManyToManyField(Studio, related_name='anime', blank=True, verbose_name='Студии')
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ongoing', verbose_name='Статус')
     rating = models.CharField(max_length=10, choices=RATING_CHOICES, default='pg13', verbose_name='Рейтинг')

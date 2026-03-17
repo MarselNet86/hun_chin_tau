@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'users',
     'anime',
     'episodes',
-    'catalog',
     'player',
 ]
 
@@ -129,7 +128,6 @@ STATICFILES_DIRS = [
     BASE_DIR / 'anime/static',
     BASE_DIR / 'player/static',
     BASE_DIR / 'users/static',
-    BASE_DIR / 'catalog/static',
 ]
 
 # Media files

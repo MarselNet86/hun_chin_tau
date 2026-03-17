@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Genre, Studio, Tag, Anime
+from .models import Genre, Tag, Anime
 
 
 @admin.register(Genre)
@@ -15,22 +15,6 @@ class GenreAdmin(admin.ModelAdmin):
         ('Основное', {
             'fields': ('name', 'slug', 'description'),
             'description': 'Добавьте жанр для аниме'
-        }),
-    )
-
-
-@admin.register(Studio)
-class StudioAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', 'founded_year', 'website']
-    search_fields = ['name']
-    prepopulated_fields = {'slug': ('name',)}
-    verbose_name = 'Студия'
-    verbose_name_plural = 'Студии'
-
-    fieldsets = (
-        ('Основное', {
-            'fields': ('name', 'slug', 'founded_year', 'description', 'website'),
-            'description': 'Информация о студии'
         }),
     )
 
@@ -56,23 +40,19 @@ class SeasonInline(admin.TabularInline):
     from episodes.models import Season
     model = Season
     extra = 1
-    fields = ['number', 'title', 'episodes_count']
+    fields = ['number', 'title']
     verbose_name = 'Сезон'
     verbose_name_plural = 'Сезоны'
     can_delete = False
-
-    def episodes_count(self, obj):
-        return obj.episodes.count() if obj.pk else 0
-    episodes_count.short_description = 'Эпизодов'
 
 
 @admin.register(Anime)
 class AnimeAdmin(admin.ModelAdmin):
     list_display = ['title_ru', 'year_badge', 'status_badge', 'score_badge', 'episodes_count', 'views_count', 'quick_link']
-    list_filter = ['status', 'rating', 'year', 'genres', 'studios']
+    list_filter = ['status', 'rating', 'year', 'genres']
     search_fields = ['title_ru', 'title_en', 'title_original']
     prepopulated_fields = {'slug': ('title_ru',)}
-    filter_horizontal = ['genres', 'tags', 'studios']
+    filter_horizontal = ['genres', 'tags']
     readonly_fields = ['created_at', 'updated_at', 'views_count', 'favorites_count']
     inlines = [SeasonInline]
     verbose_name = 'Аниме'
@@ -89,8 +69,8 @@ class AnimeAdmin(admin.ModelAdmin):
             'description': 'Загрузите постер'
         }),
         ('🏷️ Классификация', {
-            'fields': ('genres', 'tags', 'studios', 'rating'),
-            'description': 'Жанры, теги, студии и возрастной рейтинг'
+            'fields': ('genres', 'tags', 'rating'),
+            'description': 'Жанры, теги и возрастной рейтинг'
         }),
         ('ℹ️ Информация', {
             'fields': ('status', 'episodes_count', 'duration', 'year', 'released_at'),

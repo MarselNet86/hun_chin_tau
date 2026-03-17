@@ -2,8 +2,7 @@
 <nav>
   <a href="{% url 'anime:index' %}" class="logo" style="text-decoration: none;">HunChinTau</a>
   <a href="{% url 'anime:index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">Для вас</a>
-  <a href="{% url 'catalog:catalog' %}" class="nav-link {% if request.resolver_match.url_name == 'catalog' %}active{% endif %}">Каталог</a>
-  
+
   <div class="ml-auto flex items-center gap-2">
     {% if user.is_authenticated %}
       <div class="nav-icon" title="Уведомления">
