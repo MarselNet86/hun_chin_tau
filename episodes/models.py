@@ -1,5 +1,5 @@
 from django.db import models
-from django.utils.text import slugify
+from anime.models import SlugMixin
 
 
 class Season(models.Model):
@@ -18,10 +18,9 @@ class Season(models.Model):
         return f'{self.anime.title_ru} - Сезон {self.number}'
 
 
-class VoiceActor(models.Model):
+class VoiceActor(SlugMixin):
     """Озвучка"""
     name = models.CharField(max_length=200, verbose_name='Название озвучки')
-    slug = models.SlugField(unique=True, blank=True)
     description = models.TextField(blank=True, verbose_name='Описание')
     website = models.URLField(blank=True, verbose_name='Сайт')
 
@@ -32,11 +31,6 @@ class VoiceActor(models.Model):
 
     def __str__(self):
         return self.name
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
 
 
 class Episode(models.Model):

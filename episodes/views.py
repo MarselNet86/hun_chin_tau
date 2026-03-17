@@ -1,3 +1,2 @@
-from django.shortcuts import render
-
-# Create your views here.
+# Эпизоды и сезоны
+# Views для работы с эпизодами находятся в player/views.py

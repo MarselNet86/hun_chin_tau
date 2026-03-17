@@ -64,7 +64,6 @@ class SeasonInline(admin.TabularInline):
     def episodes_count(self, obj):
         return obj.episodes.count() if obj.pk else 0
     episodes_count.short_description = 'Эпизодов'
-    episodes_count.short_description = 'Эпизодов'
 
 
 @admin.register(Anime)

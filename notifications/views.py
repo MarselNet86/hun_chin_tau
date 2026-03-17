@@ -1,3 +1,2 @@
-from django.shortcuts import render
-
-# Create your views here.
+# Уведомления пользователей
+# Этот модуль пока не используется

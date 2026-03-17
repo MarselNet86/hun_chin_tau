@@ -2,10 +2,22 @@ from django.db import models
 from django.utils.text import slugify
 
 
-class Genre(models.Model):
+class SlugMixin(models.Model):
+    """Mixin для автоматической генерации slug"""
+    slug = models.SlugField(unique=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(getattr(self, 'name', getattr(self, 'title_ru', '')))
+        super().save(*args, **kwargs)
+
+
+class Genre(SlugMixin):
     """Жанры аниме"""
     name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(unique=True, blank=True)
     description = models.TextField(blank=True)
 
     class Meta:
@@ -16,16 +28,10 @@ class Genre(models.Model):
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
 
-
-class Studio(models.Model):
+class Studio(SlugMixin):
     """Студии, создающие аниме"""
     name = models.CharField(max_length=200, unique=True)
-    slug = models.SlugField(unique=True, blank=True)
     founded_year = models.IntegerField(null=True, blank=True)
     description = models.TextField(blank=True)
     website = models.URLField(blank=True)
@@ -38,16 +44,10 @@ class Studio(models.Model):
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
 
-
-class Tag(models.Model):
+class Tag(SlugMixin):
     """Теги для аниме"""
     name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(unique=True, blank=True)
 
     class Meta:
         verbose_name = 'Тег'
@@ -56,11 +56,6 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
 
 
 class Anime(models.Model):

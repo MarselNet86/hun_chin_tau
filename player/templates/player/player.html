@@ -244,52 +244,6 @@
         speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] }
       });
 
-      // Логирование событий
-      player.on('ready', function() {
-        console.log('Plyr ready');
-      });
-
-      player.on('loadedmetadata', function() {
-        console.log('Video loaded, duration:', player.duration);
-      });
-
-      player.on('seeking', function(e) {
-        console.log('Seeking from', e.detail ? e.detail.seekTime : 'no detail', 'to', player.currentTime);
-      });
-
-      player.on('seeked', function() {
-        console.log('Seeked to:', player.currentTime);
-      });
-
-      // Отладка кликов по прогресс-бару
-      document.addEventListener('click', function(e) {
-        if (e.target.closest('.plyr__progress')) {
-          console.log('Clicked on progress bar');
-        }
-      });
-
-      player.on('timeupdate', function() {
-        // Тихое логирование только для отладки
-        // console.log('Time:', player.currentTime);
-      });
-
-      player.on('error', function(event) {
-        console.error('Plyr error:', event);
-      });
-
-      // Проверка загрузки видео
-      videoElement.addEventListener('error', function(e) {
-        console.error('Video error:', videoElement.error);
-      });
-
-      videoElement.addEventListener('loadeddata', function() {
-        console.log('Video data loaded');
-      });
-
-      videoElement.addEventListener('canplay', function() {
-        console.log('Video can play, duration:', videoElement.duration);
-      });
-
       // Обработка клавиш для перемотки
       document.addEventListener('keydown', function(e) {
         if (!player || player.duration === Infinity || !player.duration) return;
