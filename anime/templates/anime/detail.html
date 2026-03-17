@@ -209,8 +209,16 @@
   {% if seasons.exists %}
   <div class="seasons-section">
     <h2 class="seasons-title">Эпизоды</h2>
-    <div class="episodes-grid">
-      {% for season in seasons.all %}
+
+    {% for season in seasons.all %}
+    <div class="season-block" style="margin-bottom:32px;">
+      {% if season.title %}
+      <h3 style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:600;margin-bottom:16px;color:rgba(255,255,255,0.9);">
+        Сезон {{ season.number }}{% if season.title %} — {{ season.title }}{% endif %}
+      </h3>
+      {% endif %}
+
+      <div class="episodes-grid">
         {% for episode in season.episodes.all %}
         <a href="/player/{{ episode.id }}/" class="episode-card">
           <div class="episode-number">Эпизод {{ episode.number }}</div>
@@ -218,8 +226,9 @@
           <div class="episode-meta">{{ episode.quality }}{% if episode.duration %} • {{ episode.duration }} мин{% endif %}</div>
         </a>
         {% endfor %}
-      {% endfor %}
+      </div>
     </div>
+    {% endfor %}
   </div>
   {% endif %}
 </div>
