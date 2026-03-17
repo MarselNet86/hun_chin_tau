@@ -25,7 +25,6 @@
 .video-wrapper video {
   width: 100%;
   height: auto;
-  max-height: 80vh;
   display: block;
 }
 
@@ -133,4 +132,58 @@
 
 .back-link:hover {
   color: #fff;
+}
+
+/* Fullscreen режим - Plyr container */
+.plyr--fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 10000 !important;
+  background: #000;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.plyr--fullscreen video {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+
+.plyr--fullscreen .plyr__controls {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+}
+
+.plyr--fullscreen .plyr__control--overlaid {
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+/* Нативный fullscreen для video элемента */
+video:fullscreen,
+video:-webkit-full-screen,
+video:-moz-full-screen,
+video:-ms-fullscreen {
+  object-fit: contain !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  top: 0 !important;
+  left: 0 !important;
+}
+
+/* Убираем padding/margin у wrapper в fullscreen */
+.plyr--fullscreen .video-wrapper,
+.plyr--fullscreen .player-main {
+  padding: 0 !important;
+  margin: 0 !important;
 }
