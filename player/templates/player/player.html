@@ -5,104 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-<style>
-  .player-layout {
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 0;
-    min-height: 100vh;
-    padding-top: 60px;
-  }
-  .player-main { padding: 24px 28px; }
-  .video-wrapper {
-    position: relative;
-    width: 100%;
-    background: #000;
-    border-radius: 10px;
-    overflow: visible;
-    border: 1px solid var(--border);
-    z-index: 1;
-  }
-  .video-wrapper video {
-    width: 100%;
-    height: auto;
-    max-height: 80vh;
-    display: block;
-  }
-  .video-wrapper .plyr {
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-  }
-  .plyr__controls {
-    pointer-events: all !important;
-  }
-  .plyr__control--overlaid {
-    pointer-events: all !important;
-  }
-  .plyr__progress {
-    pointer-events: all !important;
-    cursor: pointer;
-  }
-  .plyr__progress__slider {
-    pointer-events: all !important;
-  }
-  .player-sidebar {
-    border-left: 1px solid var(--border);
-    background: rgba(8,8,12,0.9);
-    padding: 20px;
-    overflow-y: auto;
-    max-height: calc(100vh - 60px);
-  }
-  .sidebar-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-  }
-  .sidebar-label { color: var(--text-muted); }
-  .sidebar-value { font-weight: 500; }
-  .warning-box {
-    margin-top: 16px;
-    padding: 12px;
-    border-radius: 6px;
-    background: rgba(255,165,0,0.06);
-    border: 1px solid rgba(255,165,0,0.2);
-    font-size: 12px;
-    color: rgba(255,200,100,0.8);
-    line-height: 1.5;
-  }
-  .episode-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-    gap: 8px;
-    margin-top: 10px;
-  }
-  .episode-item {
-    aspect-ratio: 16/9;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .episode-item:hover {
-    background: rgba(255,255,255,0.1);
-    border-color: rgba(255,255,255,0.2);
-  }
-  .episode-item.active {
-    background: rgba(255,255,255,0.2);
-    border-color: rgba(255,255,255,0.3);
-    color: #fff;
-  }
-</style>
+<link rel="stylesheet" href="{% static 'player/css/player.css' %}"/>
 {% endblock %}
 
 {% block content %}
@@ -111,12 +14,10 @@
 
   <div class="player-layout">
     <div class="player-main">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-        <a href="/anime/{{ anime.slug }}/" style="display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-muted)'">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
-          Назад к релизу
-        </a>
-      </div>
+      <a href="/anime/{{ anime.slug }}/" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        Назад к релизу
+      </a>
 
       <div class="video-wrapper">
         {% if player_source %}
@@ -213,79 +114,10 @@
 {% block scripts %}
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 <script>
-  // Глобальная переменная плеера
-  let player = null;
-
-  // Информация о источнике плеера
-  const player_source = {
-    player_type: '{{ player_source.player_type|default:"video" }}'
-  };
-
-  // Инициализация Plyr после загрузки DOM
-  document.addEventListener('DOMContentLoaded', function() {
-    {% if player_source and player_source.player_type == 'video' %}
-    const videoElement = document.getElementById('player');
-    if (videoElement) {
-      player = new Plyr(videoElement, {
-        controls: [
-          'play-large',
-          'play',
-          'progress',
-          'current-time',
-          'mute',
-          'volume',
-          'captions',
-          'settings',
-          'pip',
-          'airplay',
-          'fullscreen'
-        ],
-        settings: ['captions', 'quality', 'speed'],
-        speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] }
-      });
-
-      // Обработка клавиш для перемотки
-      document.addEventListener('keydown', function(e) {
-        if (!player || player.duration === Infinity || !player.duration) return;
-
-        // Пробел - пауза/воспроизведение
-        if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
-          e.preventDefault();
-          if (player.playing) {
-            player.pause();
-          } else {
-            player.play();
-          }
-        }
-
-        // Стрелки - перемотка
-        if (e.code === 'ArrowLeft') {
-          e.preventDefault();
-          player.currentTime = Math.max(0, player.currentTime - 10);
-        }
-        if (e.code === 'ArrowRight') {
-          e.preventDefault();
-          player.currentTime = Math.min(player.duration, player.currentTime + 10);
-        }
-
-        // Цифры - перемотка на процент
-        if (e.key >= '0' && e.key <= '9' && e.target.tagName !== 'INPUT') {
-          e.preventDefault();
-          const percent = parseInt(e.key) / 10;
-          player.currentTime = player.duration * percent;
-        }
-      });
-    }
-    {% endif %}
-  });
-
-  // Навигация между эпизодами
-  function nextEpisode() {
-    window.location.href = '/player/{{ episode.id }}/next/';
-  }
-
-  function prevEpisode() {
-    window.location.href = '/player/{{ episode.id }}/prev/';
-  }
+  // Передаём тип источника в JS
+  window.playerSourceType = '{{ player_source.player_type|default:"video" }}';
+  window.nextEpisodeUrl = '/player/{{ episode.id }}/next/';
+  window.prevEpisodeUrl = '/player/{{ episode.id }}/prev/';
 </script>
+<script src="{% static 'player/js/player.js' %}"></script>
 {% endblock %}
