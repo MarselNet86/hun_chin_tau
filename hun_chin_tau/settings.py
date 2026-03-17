@@ -128,7 +128,9 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'anime/static',
-    BASE_DIR / 'static',
+    BASE_DIR / 'player/static',
+    BASE_DIR / 'users/static',
+    BASE_DIR / 'catalog/static',
 ]
 
 # Media files
